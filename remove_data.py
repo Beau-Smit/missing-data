@@ -8,7 +8,7 @@ def missing_at_random(data, perc_remove, rand_seed):
                             np.repeat(1, (1-perc_remove) * data.size)])
     np.random.shuffle(idx_arr)
 
-    random_missing = np.where(idx_arr.reshape(data.shape) == 1, sample_data, np.nan)
+    random_missing = np.where(idx_arr.reshape(data.shape) == 1, data, np.nan)
 
     return random_missing
 
@@ -20,8 +20,10 @@ if __name__ == "__main__":
     #                     [2, 4, 8, 7, 8],
     #                     [7, 2, 1, 1, 6]])
 
-    sample_data = pd.read_csv("nutrition_data/NutritionalFacts_Fruit_Vegetables_Seafood.csv")
+    nutrition_data = pd.read_csv("nutrition_data/clean.csv").to_numpy()
+    data = nutrition_data[:,1:]
 
-    print(sample_data)
-    new_data = missing_at_random(sample_data, perc_remove=0.6, rand_seed=25)
-    print(new_data)
+    new_data = missing_at_random(data, perc_remove=0.2, rand_seed=25)
+    df = pd.DataFrame(new_data).set_index(nutrition_data[:,0])
+
+    df.to_csv("nutrition_data/random_missing.csv")
