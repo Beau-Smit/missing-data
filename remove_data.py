@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+import random 
+import math
 
 def missing_at_random(data, perc_remove, rand_seed):
     np.random.seed(rand_seed)
@@ -27,3 +29,20 @@ if __name__ == "__main__":
     df = pd.DataFrame(new_data).set_index(nutrition_data[:,0])
 
     df.to_csv("nutrition_data/random_missing.csv")
+
+def missing_conditional_continuous(data, target_col, reference_col, threshold, steepness = .001):
+    p_missing = data[reference_col].apply(
+            lambda x: 1/(1+ math.e**(-steepness*(x - threshold)))
+        )
+    target_col_mask = p_missing.apply(
+        lambda x: random.choices([False,True], weights=[x,1], k = 1)[0]
+    )
+    data.loc[:,target_col] = data[target_col][target_col_mask]
+    return data
+
+def missing_conditional_discrete(data, target_col, reference_col, reference_likelihoods):
+    target_col_mask = data[reference_col].apply(
+        lambda x: random.choices([False,True], weights=[reference_likelihoods[x],1], k = 1)[0]
+    )
+    data.loc[:,target_col] = data[target_col][target_col_mask]
+    return data
