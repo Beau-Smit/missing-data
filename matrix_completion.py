@@ -1,7 +1,15 @@
 import numpy as np
 import numpy.linalg as la
 
-def svt(Xobs, tau=5):
+def calc_frob_norm(X:np.ndarray, Y:np.ndarray): 
+    '''
+    Calc frob norm with rounding to avoid floating point issues
+    '''   
+    # print("Frob Norm:", )
+    return la.norm(np.round(X, 4) - np.round(Y, 4), ord='fro')
+
+
+def svt(Xobs, tau=5, stop_threshold = .001):
 
     # change missing to 0 (or svd will not converge)
     Omega = ~np.isnan(Xobs)
@@ -23,7 +31,8 @@ def svt(Xobs, tau=5):
         Xhat = Xobs*Omega + Xhat*(1-Omega)
         
         # stopping condition
-        if la.norm(Xhat - Xold) < .001:
+        # if la.norm(Xhat - Xold) < .001:
+        if calc_frob_norm(Xhat - Xold) < stop_threshold:
             return Xhat
 
 
