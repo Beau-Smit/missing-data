@@ -3,7 +3,7 @@ import random
 import pandas as pd
 
 sim_params =  {
-            'POP_SIZE' : 5000,
+            'POP_SIZE' : 100,
             'POP_RATIO' : [1/5, 1/5],
             'GROUPS' : ['A', 'B'],
             'INCOME_MEAN_SD' : {'A' : (50000.0, 15000.0), 
@@ -11,16 +11,17 @@ sim_params =  {
             'AGE_RANGE' : (18,100),
             'CENSUS_TALLIED_PCT': {'A' : .8, 
                                      'B' : .6},
-            'QUESTIONS': {'Occupants.ChildrenGrandchildren' : .05,
-                'Occupants.Relatives' : .05,
-                'Occupants.Nonrelatives' :.05,
-                'Occupants.Temporary' : .05,
-                'Occupants.NoAdditional' : .05,
-                'Housing.Owned_PaidOff' : .05,
-                'Housing.Owned_Mortgage': .05,
-                'Housing.Rented' : .05,
-                'Housing.NoPayment' : .05}
-}
+            'QUESTIONS' : {'Discrete' : {
+                                'LowLikelihood': (1, .05),
+                                'EvenLikelihood' : (1, .5),
+                                'HighLikelihood' : (1, .95)},
+                           'Continuous' : {
+                                'LowLikelihood' : (1, .05, 2000, 1200),
+                                'EvenLikelihood' : (1, .5, 2000, 1200),
+                                'HighLikelihood' : (1, .95, 2000, 1200)
+                                }
+                            }
+            }
 
 def sim_data(POP_SIZE, POP_RATIO, GROUPS, INCOME_MEAN_SD, AGE_RANGE, CENSUS_TALLIED_PCT, QUESTIONS):
 
@@ -38,9 +39,23 @@ def sim_data(POP_SIZE, POP_RATIO, GROUPS, INCOME_MEAN_SD, AGE_RANGE, CENSUS_TALL
     data.loc[:, 'InCensus'] = data['Group'].apply(
         lambda x: random.choices([1,0], cum_weights=[CENSUS_TALLIED_PCT[x], 1])[0])
 
-    # https://www2.census.gov/programs-surveys/decennial/2020/technical-documentation/questionnaires-and-instructions/questionnaires/2020-informational-questionnaire.pdf
-    for question, prob in QUESTIONS.items():
-        data.loc[:, question] = \
-            [random.choices([1,0], cum_weights=[prob, 1])[0] for _ in range(POP_SIZE)]
-    
+    for outcome_type, dict_ in QUESTIONS.items():
+
+        if outcome_type == 'Discrete':
+            for likelihood_type, params in dict_.items():
+                n_entries, prob = params
+                for idx in range(n_entries):
+                    data.loc[:, outcome_type + '_' + likelihood_type + '_' + str(idx)] = \
+                        np.random.choice(2, p = [1 - prob, prob], size = POP_SIZE)
+
+        elif outcome_type == 'Continuous':
+            for likelihood_type, params in dict_.items():
+                n_entries, prob, mu, sigma = params
+                for idx in range(n_entries):
+                        nonzero = np.random.choice(2, p = [1 - prob, prob], size = POP_SIZE)
+                        outcome = np.random.normal(loc = mu, scale = sigma, size = POP_SIZE)
+                        data.loc[:, outcome_type + '_' + likelihood_type + '_' + str(idx)] = \
+                            nonzero * outcome
+
+    data.loc[:, 'PerfectClassifierOutcome'] = data.iloc[:,1:].sum(axis = 1)
     return data

@@ -8,6 +8,10 @@ def missing_at_random(data, perc_remove, rand_seed):
 
     idx_arr = np.concatenate([np.repeat(0, perc_remove * data.size), 
                             np.repeat(1, (1-perc_remove) * data.size)])
+    discrep = idx_arr.size != data.size
+    if discrep != 0:
+        idx_arr = np.append(idx_arr, [0] * discrep)
+    
     np.random.shuffle(idx_arr)
 
     random_missing = np.where(idx_arr.reshape(data.shape) == 1, data, np.nan)
