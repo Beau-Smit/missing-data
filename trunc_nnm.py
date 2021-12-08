@@ -14,8 +14,7 @@ def create_rank_r_matrix(r: int, n: int, p: int):
     return X
 
 
-def remove_data(frac_obs: float, 
-                X: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def remove_data(frac_obs: float, X: np.ndarray):
     '''
     removes data at random
 
@@ -74,11 +73,14 @@ def ADMM(A:np.ndarray, B:np.ndarray, X:np.ndarray, params:dict,
     return X_k_1
 
 
-def truncated_NNM(rank:int, params:dict, Xobs:np.ndarray, 
-                  Omega:np.ndarray) -> np.ndarray:
+def truncated_NNM(rank:int, params:dict, Xobs:np.ndarray) -> np.ndarray:
     '''
     Performs truncated NNM given a rank. Returns updated X matrix.
     '''
+
+    Omega = ~np.isnan(Xobs)
+    Xobs[~Omega] = 0
+
     # initialize X
     orig_X = Xobs.copy()
 
@@ -126,6 +128,5 @@ if __name__ == "__main__":
 
     new_X = truncated_NNM(rank=r, 
                           params=parameters, 
-                          Xobs=Xobs,
-                          Omega=Omega)
+                          Xobs=Xobs)
     calc_frob_norm(new_X, X)
