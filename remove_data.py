@@ -19,22 +19,8 @@ def missing_at_random(data, perc_remove, rand_seed):
     return random_missing
 
 
-if __name__ == "__main__":
-    # sample_data = np.array([[4, 7, 1, 9, 6],
-    #                     [1, 7, 6, 5, 9],
-    #                     [7, 0, 3, 4, 4],
-    #                     [2, 4, 8, 7, 8],
-    #                     [7, 2, 1, 1, 6]])
-
-    nutrition_data = pd.read_csv("nutrition_data/clean.csv").to_numpy()
-    data = nutrition_data[:,1:]
-
-    new_data = missing_at_random(data, perc_remove=0.2, rand_seed=25)
-    df = pd.DataFrame(new_data).set_index(nutrition_data[:,0])
-
-    df.to_csv("nutrition_data/random_missing.csv")
-
-def missing_conditional_continuous(data, target_col, reference_col, threshold, steepness = .001):
+def missing_conditional_continuous(data_original, target_col, reference_col, threshold, steepness = .001):
+    data = data_original.copy()
     p_missing = data[reference_col].apply(
             lambda x: 1/(1+ math.e**(-steepness*(x - threshold)))
         )
@@ -44,9 +30,21 @@ def missing_conditional_continuous(data, target_col, reference_col, threshold, s
     data.loc[:,target_col] = data[target_col][target_col_mask]
     return data
 
-def missing_conditional_discrete(data, target_col, reference_col, reference_likelihoods):
+
+def missing_conditional_discrete(data_original, target_col, reference_col, reference_likelihoods):
+    data = data_original.copy()
     target_col_mask = data[reference_col].apply(
         lambda x: random.choices([False,True], weights=[reference_likelihoods[x],1], k = 1)[0]
     )
     data.loc[:,target_col] = data[target_col][target_col_mask]
     return data
+
+
+if __name__ == "__main__":
+    nutrition_data = pd.read_csv("nutrition_data/clean.csv").to_numpy()
+    data = nutrition_data[:,1:]
+
+    new_data = missing_at_random(data, perc_remove=0.2, rand_seed=25)
+    df = pd.DataFrame(new_data).set_index(nutrition_data[:,0])
+
+    df.to_csv("nutrition_data/random_missing.csv")
