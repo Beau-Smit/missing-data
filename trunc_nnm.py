@@ -1,5 +1,6 @@
 import numpy as np
 import numpy.linalg as la
+from matrix_completion import calc_frob_norm
 
 def create_rank_r_matrix(r: int, n: int, p: int):
     '''
@@ -23,10 +24,8 @@ def remove_data(frac_obs: float, X: np.ndarray):
     '''
     np.random.seed(0)
     Omega = np.array(np.random.rand(X.shape[0], X.shape[1]) < frac_obs)
-    Xobs = Omega * X
-    # Where matrix = 0: we are missing
-    #print(f'Observed X = \n {Xobs}')
-    return Xobs, Omega
+    Xobs = np.where(Omega, X, np.NaN)
+    return Xobs
 
 
 def shrinkage(X: np.ndarray, tau: float) -> np.ndarray:
@@ -104,29 +103,24 @@ def truncated_NNM(rank:int, params:dict, Xobs:np.ndarray) -> np.ndarray:
     return new_X
 
 
-def calc_frob_norm(X:np.ndarray, Y:np.ndarray): 
-    '''
-    Calc frob norm with rounding to avoid floating point issues
-    '''   
-    print("Frob Norm:", la.norm(np.round(X, 2) - np.round(Y, 2), ord='fro'))
-
-
 if __name__ == "__main__":
     # Run test function
-    r = 2
-    n = 10
-    p = 20
+    r = 3
+    n = 100
+    p = 10
+
     X = create_rank_r_matrix(r, n, p)
-    
-    Xobs, Omega = remove_data(frac_obs=0.9, X=X)
+
+    Xobs = remove_data(frac_obs=0.9, X=X)
 
     parameters = {"eps_outer": 1e-4,
                   "eps_inner": 1e-4,
-                  "beta": .01,
-                  "max_iter_outer": 100,
-                  "max_iter_inner": 100}
+                  "beta": .1,
+                  "max_iter_outer": 1000,
+                  "max_iter_inner": 1000}
 
     new_X = truncated_NNM(rank=r, 
                           params=parameters, 
                           Xobs=Xobs)
-    calc_frob_norm(new_X, X)
+
+    print("FN = ", calc_frob_norm(new_X, X))
