@@ -12,28 +12,31 @@ def calc_frob_norm(X:np.ndarray, Y:np.ndarray):
 def svt(Xobs, tau=5, stop_threshold = .001):
 
     # change missing to 0 (or svd will not converge)
-    Omega = ~np.isnan(Xobs)
-    Xobs[~Omega] = 0
+    Omega = np.isnan(Xobs)
+    Xhat = Xobs.copy()
+    Xhat[Omega] = 0
 
-    Xhat = Xobs # .copy() ?
-
+    iter = 0
     while True:
-        Xold = Xhat
+        iter +=1
+        Xold = Xhat.copy()
         u, s, vT = la.svd(Xhat)
         
         # take only singular values greater than tau
         s_hat = s[s >= tau]
-        
+
         # reconstruct Xhat
-        Xhat = u[:,:len(s_hat)]@np.diag(s_hat)@vT[:len(s_hat),:]
+        k = len(s_hat)
+        Xhat = u[:,:k] @ np.diag(s_hat) @ vT[:k,:]
 
         # fill back in observed data
-        Xhat = Xobs*Omega + Xhat*(1-Omega)
-        
+        Xhat = np.where(Omega, Xhat, Xobs)
+
         # stopping condition
-        # if la.norm(Xhat - Xold) < .001:
         if la.norm(Xhat - Xold, ord='fro') < stop_threshold:
+            print("iter", iter)
             return Xhat
+
 
 
 if __name__ == "__main__":
