@@ -9,15 +9,18 @@ def calc_frob_norm(X:np.ndarray, Y:np.ndarray):
     return la.norm(np.round(X, 4) - np.round(Y, 4), ord='fro')
 
 
-def svt(Xobs, tau=5, stop_threshold = .001):
+def svt(Xobs, tau=5, stop_threshold = .001, max_iter=1000, verbose=False):
 
     # change missing to 0 (or svd will not converge)
     Omega = np.isnan(Xobs)
     Xhat = Xobs.copy()
     Xhat[Omega] = 0
 
+    u, s, vT = la.svd(Xhat)
+    if verbose:
+        print("s in first iter", s)
     iter = 0
-    while True:
+    while iter < max_iter:
         iter +=1
         Xold = Xhat.copy()
         u, s, vT = la.svd(Xhat)
@@ -34,8 +37,10 @@ def svt(Xobs, tau=5, stop_threshold = .001):
 
         # stopping condition
         if la.norm(Xhat - Xold, ord='fro') < stop_threshold:
-            print("iter", iter)
-            return Xhat
+            break
+    if verbose:
+        print("total iter:", iter)
+    return Xhat
 
 
 
