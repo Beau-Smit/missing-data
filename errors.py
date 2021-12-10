@@ -10,7 +10,7 @@ def line_plot(missingness, errors1, errors2=None):
     if errors2 is None:
         pass
     else:
-        plt.plot(missingness, errors2, c='#841a06')
+        plt.plot(missingness, errors2, c='#33bb55')
     plt.title("Error rate vs missingness")
     plt.xlabel("Proportion of data missing")
     plt.ylabel("Reconstruction error (Frobenius norm)")
