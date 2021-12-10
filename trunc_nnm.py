@@ -1,19 +1,7 @@
 import numpy as np
 import numpy.linalg as la
 from matrix_completion import calc_frob_norm
-
-def create_rank_r_matrix(r: int, n: int, p: int):
-    '''
-    Creates a random n x p matrix of rank r.
-    ''' 
-    np.random.seed(0)
-    A = np.floor(np.random.rand (n, r) * 10)
-    B = np.floor(np.random.rand (r, p) * 10) 
-    X = A @ B 
-    #print("Shape of X", X.shape)
-    print(f'Rank X = {la.matrix_rank(X)}') 
-    return X
-
+from simulate_data import create_rank_r_matrix
 
 def remove_data(frac_obs: float, X: np.ndarray):
     '''

@@ -32,7 +32,7 @@ def svt(Xobs, tau=5, stop_threshold = .001):
         
         # stopping condition
         # if la.norm(Xhat - Xold) < .001:
-        if calc_frob_norm(Xhat - Xold) < stop_threshold:
+        if la.norm(Xhat - Xold, ord='fro') < stop_threshold:
             return Xhat
 
 

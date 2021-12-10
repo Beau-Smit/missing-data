@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.linalg as la
 import random
 import pandas as pd
 
@@ -59,3 +60,15 @@ def sim_data(POP_SIZE, POP_RATIO, GROUPS, INCOME_MEAN_SD, AGE_RANGE, CENSUS_TALL
 
     data.loc[:, 'PerfectClassifierOutcome'] = data.iloc[:,1:].sum(axis = 1)
     return data
+
+def create_rank_r_matrix(r: int, n: int, p: int):
+    '''
+    Creates a random n x p matrix of rank r.
+    ''' 
+    np.random.seed(0)
+    A = np.floor(np.random.rand (n, r) * 10)
+    B = np.floor(np.random.rand (r, p) * 10) 
+    X = A @ B 
+    #print("Shape of X", X.shape)
+    #print(f'Rank X = {la.matrix_rank(X)}') 
+    return X
