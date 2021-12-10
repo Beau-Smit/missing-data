@@ -2,6 +2,7 @@ import numpy as np
 import numpy.linalg as la
 from matrix_completion import calc_frob_norm
 from simulate_data import create_rank_r_matrix
+import matrix_completion
 
 def remove_data(frac_obs: float, X: np.ndarray):
     '''
@@ -92,14 +93,19 @@ def truncated_NNM(rank:int, params:dict, Xobs:np.ndarray) -> np.ndarray:
 
 
 if __name__ == "__main__":
+    np.set_printoptions(precision=3)
+    np.set_printoptions(suppress=True)
+
     # Run test function
-    r = 3
-    n = 100
+    r = 2
+    n = 15
     p = 10
 
     X = create_rank_r_matrix(r, n, p)
-
+    print("Original X \n ", X)
+    
     Xobs = remove_data(frac_obs=0.9, X=X)
+    print("Missing X \n ", Xobs)
 
     parameters = {"eps_outer": 1e-4,
                   "eps_inner": 1e-4,
@@ -107,8 +113,11 @@ if __name__ == "__main__":
                   "max_iter_outer": 1000,
                   "max_iter_inner": 1000}
 
-    new_X = truncated_NNM(rank=r, 
+    new_X_tnnm = truncated_NNM(rank=r, 
                           params=parameters, 
                           Xobs=Xobs)
 
-    print("FN = ", calc_frob_norm(new_X, X))
+    print("New X - TNNM \n ", new_X_tnnm)
+    print("TNNM FN = ", calc_frob_norm(new_X_tnnm, X))
+
+
