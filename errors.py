@@ -4,30 +4,22 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def line_plot(missingness, errors1, errors2=None):
+def line_plot(missingness, errors1, errors2=None, save=False, title="", xlabel="", ylabel=""):
     plt.figure()
     plt.plot(missingness, errors1, c='#9D2EC5')
     if errors2 is None:
         pass
     else:
         plt.plot(missingness, errors2, c='#33bb55')
-    plt.title("Error rate vs missingness")
-    plt.xlabel("Proportion of data missing")
-    plt.ylabel("Reconstruction error (Frobenius norm)")
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
     plt.grid(True)
-    plt.show()
-    # plt.savefig("output/lineplot_errors.png")
-
-
-def scatter_plot(missingness, errors):
-    plt.figure()
-    plt.scatter(missingness, errors)
-    plt.title("How is error affected by missingness?")
-    plt.xlabel("proportion missing")
-    plt.ylabel("error")
-    plt.grid(True)
-    plt.show()
-    # plt.savefig("output/scatterplot_errors.png")
+    plt.legend([errors1.name, errors2.name])
+    if save:
+        plt.savefig(f"output/{title.replace(' ', '_')}.png")
+    else:
+        plt.show()
 
 def plot_errors2(missingness, errors):
     sns.lineplot(x=missingness, y=errors)
